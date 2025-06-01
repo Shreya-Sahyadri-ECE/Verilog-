@@ -1,0 +1,37 @@
+`include "intf.sv"
+`include "driver.sv"
+`include "monitor.sv"
+
+module tb_mux;
+    mux_if mux_if();
+
+    Driver drv;
+    Monitor mon;
+
+    // DUT instantiation
+    mux2to1 dut (
+        .a(mux_if.a),
+        .b(mux_if.b),
+        .sel(mux_if.sel),
+        .y(mux_if.y)
+    );
+
+    initial begin
+        $dumpfile("dump.vcd");
+        $dumpvars(0, tb_mux);
+    end
+
+    initial begin
+        drv = new(mux_if);
+        mon = new(mux_if);
+
+        drv.drive(0, 0, 0); #1; mon.monitor_output();  // y = a = 0
+        drv.drive(0, 1, 0); #1; mon.monitor_output();  // y = a = 0
+        drv.drive(0, 1, 1); #1; mon.monitor_output();  // y = b = 1
+        drv.drive(1, 0, 1); #1; mon.monitor_output();  // y = b = 0
+        drv.drive(1, 1, 0); #1; mon.monitor_output();  // y = a = 1
+        drv.drive(1, 1, 1); #1; mon.monitor_output();  // y = b = 1
+
+        $finish;
+    end
+endmodule
